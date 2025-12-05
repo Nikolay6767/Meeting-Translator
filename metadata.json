@@ -1,0 +1,7 @@
+{
+  "name": "Meeting Translator by Mr Naing",
+  "description": "Intelligent voice recorder that converts English/Russian speech into structured Meeting Minutes or Lecture Summaries in Myanmar language.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
