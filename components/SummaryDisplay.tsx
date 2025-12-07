@@ -14,6 +14,11 @@ export const SummaryDisplay: React.FC<SummaryDisplayProps> = ({ result, onReset 
   const handleDownloadPDF = () => {
     if (!contentRef.current || !window.html2pdf) return;
 
+    // Clone element to remove dark mode classes for PDF generation if we want standard white paper pdfs
+    // For simplicity, we assume the PDF generator captures the computed styles, which might be dark text on light bg if we force it.
+    // However, html2pdf usually takes screenshot. If we want white background PDF, we should ensure the element has white bg.
+    // The inner div already has bg-white, so it should be fine.
+    
     const element = contentRef.current;
     const opt = {
       margin:       [0.5, 0.5],
@@ -35,12 +40,12 @@ export const SummaryDisplay: React.FC<SummaryDisplayProps> = ({ result, onReset 
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-6 animate-fade-in">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm transition-colors duration-300">
         <div>
-          <h2 className="text-xl font-bold text-slate-800 font-burmese">
+          <h2 className="text-xl font-bold text-slate-800 dark:text-white font-burmese">
             {result.type === 'MEETING' ? 'Meeting Minutes' : 'Lecture Notes'}
           </h2>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-slate-500 dark:text-slate-400">
             Generated on {new Date(result.timestamp).toLocaleString()}
           </p>
         </div>
@@ -48,14 +53,14 @@ export const SummaryDisplay: React.FC<SummaryDisplayProps> = ({ result, onReset 
         <div className="flex items-center gap-2">
            <button 
             onClick={onReset}
-            className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors flex items-center gap-2 text-sm font-medium"
+            className="p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors flex items-center gap-2 text-sm font-medium"
           >
             <RefreshCcw className="w-4 h-4" />
             <span className="hidden sm:inline">New</span>
           </button>
           <button 
             onClick={handleCopy}
-            className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors flex items-center gap-2 text-sm font-medium"
+            className="p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors flex items-center gap-2 text-sm font-medium"
           >
             <Copy className="w-4 h-4" />
             <span className="hidden sm:inline">Copy</span>
@@ -70,8 +75,18 @@ export const SummaryDisplay: React.FC<SummaryDisplayProps> = ({ result, onReset 
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-lg border border-slate-100 overflow-hidden">
-        {/* This container is what gets converted to PDF */}
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-100 dark:border-slate-700 overflow-hidden transition-colors duration-300">
+        {/* This container is what gets converted to PDF. We keep it strictly light theme for PDF export purposes by enforcing bg-white and text-slate-800 on the inner div, 
+            but we can use dark mode for viewing if we want.
+            However, user experience usually expects the preview to match the download. 
+            To support Dark Mode viewing but Light Mode PDF, we can use a separate wrapper or just force the PDF generation to use light styles. 
+            For now, let's keep the view consistent with the PDF output which is best on white paper. 
+            So we will NOT invert this specific paper view area to dark mode, or we will only invert the outer container but keep the paper white.
+            
+            Let's decide: "Apply a dark theme to the background and text colors". 
+            Usually document editors (like Word/Docs) keep the page white even in dark mode. 
+            Let's keep the paper white to ensure WYSIWYG for PDF export.
+        */}
         <div ref={contentRef} className="p-8 md:p-12 min-h-[500px] font-burmese bg-white text-slate-800 leading-relaxed">
            <div className="mb-6 border-b border-slate-100 pb-4">
                <h1 className="text-2xl font-bold text-slate-900 mb-2">

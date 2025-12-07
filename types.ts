@@ -13,11 +13,14 @@ export enum NoteType {
 }
 
 export enum SourceLanguage {
+  AUTO = 'Auto-detect',
   ENGLISH = 'English',
-  RUSSIAN = 'Russian'
+  RUSSIAN = 'Russian',
+  BURMESE = 'Burmese'
 }
 
 export interface ProcessingResult {
+  id: string;
   text: string;
   type: string;
   timestamp: string;
