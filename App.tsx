@@ -13,8 +13,17 @@ const App: React.FC = () => {
   const [result, setResult] = useState<ProcessingResult | null>(null);
   const [errorMessage, setErrorMessage] = useState<string>("");
   
-  // History State
-  const [history, setHistory] = useState<ProcessingResult[]>([]);
+  // History State - loaded synchronously from localStorage so it is
+  // available on the very first render (no load/save effect race).
+  const [history, setHistory] = useState<ProcessingResult[]>(() => {
+    try {
+      const savedHistory = localStorage.getItem('notegenie_history');
+      return savedHistory ? JSON.parse(savedHistory) : [];
+    } catch (e) {
+      console.error("Failed to parse history", e);
+      return [];
+    }
+  });
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
   // Dark Mode State
@@ -37,19 +46,9 @@ const App: React.FC = () => {
     }
   }, [isDarkMode]);
 
-  // Load history from local storage on mount
-  useEffect(() => {
-    const savedHistory = localStorage.getItem('notegenie_history');
-    if (savedHistory) {
-      try {
-        setHistory(JSON.parse(savedHistory));
-      } catch (e) {
-        console.error("Failed to parse history", e);
-      }
-    }
-  }, []);
-
-  // Save history whenever it changes
+  // Save history whenever it changes. Because history is initialized
+  // synchronously from localStorage above, the first run simply writes
+  // the same data back, so there is no risk of wiping stored history.
   useEffect(() => {
     localStorage.setItem('notegenie_history', JSON.stringify(history));
   }, [history]);
